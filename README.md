@@ -26,7 +26,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/infra-cost-sentinel.git
+git clone https://github.com/praneethturlapati/infra-cost-sentinel.git
 cd infra-cost-sentinel
 
 # Create virtual environment
@@ -205,7 +205,7 @@ infra-cost-sentinel/
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/infra-cost-sentinel.git
+git clone https://github.com/praneethturlapati/infra-cost-sentinel.git
 cd infra-cost-sentinel
 python -m venv .venv
 source .venv/bin/activate
