@@ -1,12 +1,11 @@
 """Cost Analysis Engine with optimization recommendations."""
 
-from datetime import date, timedelta
-from decimal import Decimal
-from dataclasses import dataclass
 from collections import defaultdict
+from dataclasses import dataclass
+from decimal import Decimal
 from enum import Enum
 
-from .models import CostSummary, ResourceCost, ResourceStatus, ServiceCost
+from .models import CostSummary, ResourceCost, ResourceStatus
 
 
 class TrendDirection(Enum):
@@ -78,11 +77,11 @@ class CostAnalyzer:
         "Amazon CloudFront": CostCategory.NETWORK,
         "AWS Data Transfer": CostCategory.NETWORK,
     }
-    
+
     def __init__(self, cost_threshold_percent: float = 20.0, idle_threshold_days: int = 7):
         self.cost_threshold_percent = cost_threshold_percent
         self.idle_threshold_days = idle_threshold_days
-    
+
     def analyze(self, cost_summary: CostSummary, resources: list[ResourceCost] | None = None) -> AnalysisReport:
         resources = resources or []
         trends = self._analyze_trends(cost_summary)
@@ -94,12 +93,16 @@ class CostAnalyzer:
         efficiency = self._calculate_efficiency_score(cost_summary, resources, total_savings)
         recommendations = self._generate_recommendations(cost_summary, trends, idle, savings)
         return AnalysisReport(
-            summary=cost_summary, trends=trends, alerts=alerts,
-            savings_opportunities=savings, idle_resources=idle,
-            total_potential_savings=total_savings, efficiency_score=efficiency,
+            summary=cost_summary,
+            trends=trends,
+            alerts=alerts,
+            savings_opportunities=savings,
+            idle_resources=idle,
+            total_potential_savings=total_savings,
+            efficiency_score=efficiency,
             recommendations=recommendations,
         )
-    
+
     def _analyze_trends(self, summary: CostSummary) -> list[CostTrend]:
         trends: list[CostTrend] = []
         if summary.cost_change_percent is not None:
@@ -114,7 +117,9 @@ class CostAnalyzer:
                 direction = TrendDirection.STABLE
                 message = "Costs are stable compared to previous period"
             period_days = (summary.end_date - summary.start_date).days
-            trends.append(CostTrend(direction=direction, change_percent=change, period_days=period_days, message=message))
+            trends.append(
+                CostTrend(direction=direction, change_percent=change, period_days=period_days, message=message)
+            )
         for service in summary.by_service[:5]:
             if service.daily_costs and len(service.daily_costs) > 7:
                 first_week = sum((d.amount for d in service.daily_costs[:7]), Decimal("0")) / 7
@@ -123,43 +128,61 @@ class CostAnalyzer:
                     change = float((last_week - first_week) / first_week * 100)
                     if abs(change) > 10:
                         direction = TrendDirection.UP if change > 0 else TrendDirection.DOWN
-                        trends.append(CostTrend(
-                            direction=direction, change_percent=change, period_days=7,
-                            message=f"{service.service}: {'increased' if change > 0 else 'decreased'} by {abs(change):.1f}%",
-                        ))
+                        change_dir = "increased" if change > 0 else "decreased"
+                        trends.append(
+                            CostTrend(
+                                direction=direction,
+                                change_percent=change,
+                                period_days=7,
+                                message=f"{service.service}: {change_dir} by {abs(change):.1f}%",
+                            )
+                        )
         return trends
-    
+
     def _generate_alerts(self, summary: CostSummary, resources: list[ResourceCost]) -> list[CostAlert]:
         alerts: list[CostAlert] = []
         if summary.cost_change_percent and summary.cost_change_percent > self.cost_threshold_percent:
-            alerts.append(CostAlert(
-                severity="warning", title="Cost Spike Detected",
-                message=f"Costs increased by {summary.cost_change_percent:.1f}% which exceeds {self.cost_threshold_percent}% threshold",
-                resource_ids=[], threshold=Decimal(str(self.cost_threshold_percent)),
-                current_value=Decimal(str(summary.cost_change_percent)),
-            ))
+            threshold = self.cost_threshold_percent
+            alerts.append(
+                CostAlert(
+                    severity="warning",
+                    title="Cost Spike Detected",
+                    message=f"Costs increased by {summary.cost_change_percent:.1f}% (threshold: {threshold}%)",
+                    resource_ids=[],
+                    threshold=Decimal(str(self.cost_threshold_percent)),
+                    current_value=Decimal(str(summary.cost_change_percent)),
+                )
+            )
         idle_resources = [r for r in resources if r.status == ResourceStatus.IDLE]
         if idle_resources:
             idle_cost = sum((r.monthly_cost for r in idle_resources), Decimal("0"))
-            alerts.append(CostAlert(
-                severity="info", title="Idle Resources Detected",
-                message=f"Found {len(idle_resources)} idle resources costing ${idle_cost:.2f}/month",
-                resource_ids=[r.resource_id for r in idle_resources],
-            ))
+            alerts.append(
+                CostAlert(
+                    severity="info",
+                    title="Idle Resources Detected",
+                    message=f"Found {len(idle_resources)} idle resources costing ${idle_cost:.2f}/month",
+                    resource_ids=[r.resource_id for r in idle_resources],
+                )
+            )
         for service in summary.by_service:
             if service.percentage > 50:
-                alerts.append(CostAlert(
-                    severity="info", title="High Service Concentration",
-                    message=f"{service.service} accounts for {service.percentage:.1f}% of total costs",
-                    resource_ids=[],
-                ))
+                alerts.append(
+                    CostAlert(
+                        severity="info",
+                        title="High Service Concentration",
+                        message=f"{service.service} accounts for {service.percentage:.1f}% of total costs",
+                        resource_ids=[],
+                    )
+                )
                 break
         return alerts
-    
+
     def _find_idle_resources(self, resources: list[ResourceCost]) -> list[ResourceCost]:
         return [r for r in resources if r.status == ResourceStatus.IDLE and r.potential_savings > 0]
-    
-    def _find_savings_opportunities(self, summary: CostSummary, resources: list[ResourceCost], idle: list[ResourceCost]) -> list[SavingsOpportunity]:
+
+    def _find_savings_opportunities(
+        self, summary: CostSummary, resources: list[ResourceCost], idle: list[ResourceCost]
+    ) -> list[SavingsOpportunity]:
         opportunities: list[SavingsOpportunity] = []
         by_type: dict[str, list[ResourceCost]] = defaultdict(list)
         for r in idle:
@@ -167,28 +190,36 @@ class CostAnalyzer:
         for resource_type, items in by_type.items():
             total_savings = sum((r.potential_savings for r in items), Decimal("0"))
             if total_savings > 0:
-                opportunities.append(SavingsOpportunity(
-                    category=resource_type.split("::")[0],
-                    description=f"Clean up {len(items)} idle {resource_type} resources",
-                    potential_savings=total_savings, effort="low",
-                    resources=[r.resource_id for r in items],
-                    recommendation="Review and terminate or snapshot unused resources",
-                ))
+                opportunities.append(
+                    SavingsOpportunity(
+                        category=resource_type.split("::")[0],
+                        description=f"Clean up {len(items)} idle {resource_type} resources",
+                        potential_savings=total_savings,
+                        effort="low",
+                        resources=[r.resource_id for r in items],
+                        recommendation="Review and terminate or snapshot unused resources",
+                    )
+                )
         ec2_costs = Decimal("0")
         for service in summary.by_service:
             if "EC2" in service.service or "Compute" in service.service:
                 ec2_costs += service.amount
         if ec2_costs > Decimal("100"):
-            opportunities.append(SavingsOpportunity(
-                category="Compute",
-                description="Consider Reserved Instances or Savings Plans for EC2",
-                potential_savings=ec2_costs * Decimal("0.30"), effort="medium",
-                resources=[],
-                recommendation="Analyze usage patterns and commit to 1-year Savings Plans for predictable workloads",
-            ))
+            opportunities.append(
+                SavingsOpportunity(
+                    category="Compute",
+                    description="Consider Reserved Instances or Savings Plans for EC2",
+                    potential_savings=ec2_costs * Decimal("0.30"),
+                    effort="medium",
+                    resources=[],
+                    recommendation="Commit to 1-year Savings Plans for predictable workloads",
+                )
+            )
         return opportunities
-    
-    def _calculate_efficiency_score(self, summary: CostSummary, resources: list[ResourceCost], total_savings: Decimal) -> float:
+
+    def _calculate_efficiency_score(
+        self, summary: CostSummary, resources: list[ResourceCost], total_savings: Decimal
+    ) -> float:
         if summary.total_cost == 0:
             return 100.0
         waste_ratio = float(total_savings / summary.total_cost)
@@ -199,8 +230,10 @@ class CostAnalyzer:
         if summary.cost_change_percent and summary.cost_change_percent > 20:
             score -= min(15, (summary.cost_change_percent - 20) / 2)
         return max(0, min(100, score))
-    
-    def _generate_recommendations(self, summary: CostSummary, trends: list[CostTrend], idle: list[ResourceCost], savings: list[SavingsOpportunity]) -> list[str]:
+
+    def _generate_recommendations(
+        self, summary: CostSummary, trends: list[CostTrend], idle: list[ResourceCost], savings: list[SavingsOpportunity]
+    ) -> list[str]:
         recs: list[str] = []
         if idle:
             total_idle_savings = sum((r.potential_savings for r in idle), Decimal("0"))
@@ -217,7 +250,7 @@ class CostAnalyzer:
         if len(summary.by_region) > 1:
             recs.append("Review multi-region deployment for cost optimization opportunities")
         return recs[:10]
-    
+
     def categorize_costs(self, summary: CostSummary) -> dict[CostCategory, Decimal]:
         by_category: dict[CostCategory, Decimal] = {cat: Decimal("0") for cat in CostCategory}
         for service in summary.by_service:

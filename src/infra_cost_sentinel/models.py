@@ -1,6 +1,6 @@
 """Data models for cost analysis."""
 
-from datetime import datetime, date
+from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 
@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 class CostCategory(str, Enum):
     """AWS cost categories."""
+
     COMPUTE = "Compute"
     STORAGE = "Storage"
     DATABASE = "Database"
@@ -21,6 +22,7 @@ class CostCategory(str, Enum):
 
 class ResourceStatus(str, Enum):
     """Resource utilization status."""
+
     OPTIMAL = "optimal"
     UNDERUTILIZED = "underutilized"
     IDLE = "idle"
@@ -30,6 +32,7 @@ class ResourceStatus(str, Enum):
 
 class SavingsType(str, Enum):
     """Types of cost savings opportunities."""
+
     RESERVED_INSTANCES = "reserved_instances"
     SAVINGS_PLANS = "savings_plans"
     SPOT_INSTANCES = "spot_instances"
@@ -42,11 +45,12 @@ class SavingsType(str, Enum):
 
 class Priority(str, Enum):
     """Recommendation priority levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-    
+
     @property
     def emoji(self) -> str:
         return {
@@ -59,6 +63,7 @@ class Priority(str, Enum):
 
 class AWSService(str, Enum):
     """Common AWS services."""
+
     EC2 = "Amazon Elastic Compute Cloud"
     RDS = "Amazon Relational Database Service"
     S3 = "Amazon Simple Storage Service"
@@ -78,6 +83,7 @@ class AWSService(str, Enum):
 
 class DailyCost(BaseModel):
     """Cost data for a single day."""
+
     date: date
     amount: Decimal
     currency: str = "USD"
@@ -85,6 +91,7 @@ class DailyCost(BaseModel):
 
 class ServiceCost(BaseModel):
     """Cost breakdown for a single AWS service."""
+
     service: str
     service_code: str
     amount: Decimal
@@ -97,6 +104,7 @@ class ServiceCost(BaseModel):
 
 class ResourceCost(BaseModel):
     """Cost and metadata for a specific AWS resource."""
+
     resource_id: str
     resource_type: str
     resource_name: str | None = None
@@ -116,6 +124,7 @@ class ResourceCost(BaseModel):
 
 class CostRecommendation(BaseModel):
     """A specific cost optimization recommendation."""
+
     id: str
     title: str
     description: str
@@ -130,7 +139,7 @@ class CostRecommendation(BaseModel):
     implementation_steps: list[str] = Field(default_factory=list)
     category: CostCategory = CostCategory.OTHER
     service: str | None = None
-    
+
     def get_roi_score(self) -> float:
         """Calculate ROI score based on savings and effort."""
         effort_multiplier = {"Low": 3.0, "Medium": 2.0, "High": 1.0}.get(self.implementation_effort, 1.0)
@@ -139,6 +148,7 @@ class CostRecommendation(BaseModel):
 
 class CostSummary(BaseModel):
     """Summary of costs for a time period."""
+
     start_date: date
     end_date: date
     total_cost: Decimal
@@ -154,6 +164,7 @@ class CostSummary(BaseModel):
 
 class CostAnalysis(BaseModel):
     """Complete cost analysis with recommendations."""
+
     analyzed_at: datetime = Field(default_factory=datetime.now)
     account_id: str
     account_alias: str | None = None
@@ -168,18 +179,18 @@ class CostAnalysis(BaseModel):
     cost_efficiency_score: float = 0.0
     resource_utilization_score: float = 0.0
     optimization_score: float = 0.0
-    
+
     def calculate_scores(self) -> None:
         """Calculate optimization scores based on analysis."""
         self.total_potential_monthly_savings = sum(r.estimated_monthly_savings for r in self.recommendations)
         self.total_potential_annual_savings = self.total_potential_monthly_savings * 12
-        
+
         if self.summary.total_cost > 0:
             savings_ratio = float(self.total_potential_monthly_savings / self.summary.total_cost)
             self.cost_efficiency_score = max(0, min(100, (1 - savings_ratio) * 100))
-        
+
         if self.resources:
             optimal_count = sum(1 for r in self.resources if r.status == ResourceStatus.OPTIMAL)
             self.resource_utilization_score = (optimal_count / len(self.resources)) * 100
-        
+
         self.optimization_score = self.cost_efficiency_score * 0.5 + self.resource_utilization_score * 0.5
