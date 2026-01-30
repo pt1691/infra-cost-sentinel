@@ -41,3 +41,17 @@ class TestResourceCost:
         )
         assert resource.resource_id == "i-1234567890abcdef0"
         assert resource.monthly_cost == Decimal("50.00")
+
+    def test_resource_cost_with_unknown_status(self):
+        """Test creating a resource cost with UNKNOWN status."""
+        resource = ResourceCost(
+            resource_id="i-unknown123",
+            resource_type="EC2 Instance",
+            region="us-east-1",
+            account_id="123456789012",
+            monthly_cost=Decimal("100.00"),
+            daily_cost=Decimal("3.33"),
+            status="unknown",
+        )
+        assert resource.status == ResourceStatus.UNKNOWN
+        assert resource.resource_id == "i-unknown123"
