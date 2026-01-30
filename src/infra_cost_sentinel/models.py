@@ -28,6 +28,7 @@ class ResourceStatus(str, Enum):
     IDLE = "idle"
     OVERPROVISIONED = "overprovisioned"
     RIGHTSIZING_CANDIDATE = "rightsizing_candidate"
+    UNKNOWN = "unknown"
 
 
 class SavingsType(str, Enum):
