@@ -6,7 +6,6 @@ from infra_cost_sentinel.models import (
     ResourceStatus,
 )
 from decimal import Decimal
-from datetime import date
 
 
 class TestServiceCost:
