@@ -9,7 +9,18 @@
 
 **Infra Cost Sentinel** is a command-line tool that analyzes your AWS infrastructure costs, identifies savings opportunities, and provides actionable recommendations to optimize your cloud spending.
 
-![Dashboard Screenshot](docs/dashboard.png)
+## ⚡ 30-Second Quick Start
+
+```bash
+git clone https://github.com/pt1691/infra-cost-sentinel.git && cd infra-cost-sentinel
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e .
+sentinel demo-mode  # See it in action - no AWS required!
+```
+
+**That's it!** The demo shows realistic AWS cost data with savings recommendations.
+
+---
 
 ## ✨ Features
 
@@ -21,37 +32,23 @@
 - **🎭 Demo Mode** - Try without AWS credentials using realistic sample data
 - **📋 Multiple Output Formats** - Terminal dashboard or JSON for automation
 
-## 🚀 Quick Start
+## 🚀 Installation & Usage
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/praneethturlapati/infra-cost-sentinel.git
+git clone https://github.com/pt1691/infra-cost-sentinel.git
 cd infra-cost-sentinel
-
-# Create virtual environment
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install the package
 pip install -e .
 ```
 
 ### Try with Demo Data (No AWS Required)
 
 ```bash
-# Full analysis dashboard with demo data
-sentinel scan --demo
-
-# View cost report
-sentinel report --demo
-
-# See recommendations
-sentinel recommendations --demo
-
-# Find idle resources
-sentinel idle --demo
+# Full analysis dashboard with realistic sample data
+sentinel demo-mode
 ```
 
 ### Use with Real AWS Data
@@ -61,16 +58,16 @@ sentinel idle --demo
 aws configure
 
 # Run full analysis
-sentinel scan
+sentinel analyze
 
-# Use specific profile
-sentinel scan --profile production
+# View cost breakdown by service
+sentinel costs
 
-# Scan specific regions
-sentinel scan -r us-east-1 -r eu-west-1
+# See cost trends
+sentinel trends
 
-# Analyze last 60 days
-sentinel scan --days 60
+# List resources with costs
+sentinel resources
 ```
 
 ## 📋 Requirements
