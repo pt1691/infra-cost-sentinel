@@ -58,9 +58,9 @@ dev = [
 sentinel = "infra_cost_sentinel.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/praneethturlapati/infra-cost-sentinel"
-Repository = "https://github.com/praneethturlapati/infra-cost-sentinel"
-Issues = "https://github.com/praneethturlapati/infra-cost-sentinel/issues"
+Homepage = "https://github.com/pt1691/infra-cost-sentinel"
+Repository = "https://github.com/pt1691/infra-cost-sentinel"
+Issues = "https://github.com/pt1691/infra-cost-sentinel/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/infra_cost_sentinel"]
