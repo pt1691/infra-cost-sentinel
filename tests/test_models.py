@@ -1,14 +1,12 @@
 """Tests for Infra Cost Sentinel."""
 
-import pytest
+from decimal import Decimal
+
 from infra_cost_sentinel.models import (
-    ServiceCost,
     ResourceCost,
     ResourceStatus,
-    DailyCost,
+    ServiceCost,
 )
-from decimal import Decimal
-from datetime import date
 
 
 class TestServiceCost:
