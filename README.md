@@ -1,10 +1,11 @@
 # 🛡️ Infra Cost Sentinel
 
-> AWS Infrastructure Cost Analyzer with Rich Terminal Dashboards
+[![CI](https://github.com/pt1691/infra-cost-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/pt1691/infra-cost-sentinel/actions/workflows/ci.yml)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+> **AWS Infrastructure Cost Analyzer with Rich Terminal Dashboards**
 
 **Infra Cost Sentinel** is a command-line tool that analyzes your AWS infrastructure costs, identifies savings opportunities, and provides actionable recommendations to optimize your cloud spending.
 
