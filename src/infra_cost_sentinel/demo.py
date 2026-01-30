@@ -38,7 +38,6 @@ class DemoDataGenerator:
             start_date = end_date - timedelta(days=30)
 
         days = (end_date - start_date).days
-        self.monthly_budget / 30
 
         by_service: list[ServiceCost] = []
         total_cost = Decimal("0")
