@@ -4,7 +4,6 @@ from infra_cost_sentinel.models import (
     ServiceCost,
     ResourceCost,
     ResourceStatus,
-    DailyCost,
 )
 from decimal import Decimal
 from datetime import date
