@@ -1,11 +1,12 @@
 """Tests for Infra Cost Sentinel."""
 
+from decimal import Decimal
+
 from infra_cost_sentinel.models import (
     ServiceCost,
     ResourceCost,
     ResourceStatus,
 )
-from decimal import Decimal
 
 
 class TestServiceCost:
