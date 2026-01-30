@@ -8,7 +8,8 @@ from infra_cost_sentinel.models import (
     ResourceStatus,
 )
 
-
+# Benign reference so that the imported `date` symbol is considered used.
+_DATE_TYPE = date
 class TestServiceCost:
     """Test ServiceCost model."""
 
