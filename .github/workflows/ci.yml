@@ -25,9 +25,9 @@ jobs:
       
       - name: Lint with ruff
         run: |
-          ruff check src/ --fix
-          ruff format src/
+          ruff check src/
+          ruff format src/ --check
       
       - name: Run tests
         run: |
-          pytest tests/ -v --tb=short || echo "No tests found or tests failed"
+          pytest tests/ -v --tb=short

@@ -128,12 +128,13 @@ class CostAnalyzer:
                     change = float((last_week - first_week) / first_week * 100)
                     if abs(change) > 10:
                         direction = TrendDirection.UP if change > 0 else TrendDirection.DOWN
+                        change_dir = "increased" if change > 0 else "decreased"
                         trends.append(
                             CostTrend(
                                 direction=direction,
                                 change_percent=change,
                                 period_days=7,
-                                message=f"{service.service}: {'increased' if change > 0 else 'decreased'} by {abs(change):.1f}%",
+                                message=f"{service.service}: {change_dir} by {abs(change):.1f}%",
                             )
                         )
         return trends
@@ -141,11 +142,12 @@ class CostAnalyzer:
     def _generate_alerts(self, summary: CostSummary, resources: list[ResourceCost]) -> list[CostAlert]:
         alerts: list[CostAlert] = []
         if summary.cost_change_percent and summary.cost_change_percent > self.cost_threshold_percent:
+            threshold = self.cost_threshold_percent
             alerts.append(
                 CostAlert(
                     severity="warning",
                     title="Cost Spike Detected",
-                    message=f"Costs increased by {summary.cost_change_percent:.1f}% which exceeds {self.cost_threshold_percent}% threshold",
+                    message=f"Costs increased by {summary.cost_change_percent:.1f}% (threshold: {threshold}%)",
                     resource_ids=[],
                     threshold=Decimal(str(self.cost_threshold_percent)),
                     current_value=Decimal(str(summary.cost_change_percent)),
@@ -210,7 +212,7 @@ class CostAnalyzer:
                     potential_savings=ec2_costs * Decimal("0.30"),
                     effort="medium",
                     resources=[],
-                    recommendation="Analyze usage patterns and commit to 1-year Savings Plans for predictable workloads",
+                    recommendation="Commit to 1-year Savings Plans for predictable workloads",
                 )
             )
         return opportunities
