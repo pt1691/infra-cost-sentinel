@@ -1,6 +1,5 @@
 """Tests for Infra Cost Sentinel."""
 
-import pytest
 from infra_cost_sentinel.models import (
     ServiceCost,
     ResourceCost,
