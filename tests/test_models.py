@@ -3,13 +3,12 @@
 from decimal import Decimal
 
 from infra_cost_sentinel.models import (
-    ServiceCost,
     ResourceCost,
     ResourceStatus,
+    ServiceCost,
 )
 
-# Benign reference so that the imported `date` symbol is considered used.
-_DATE_TYPE = date
+
 class TestServiceCost:
     """Test ServiceCost model."""
 
