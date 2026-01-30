@@ -1,18 +1,17 @@
 """CLI entry point for infra-cost-sentinel."""
 
+import json
 from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
-import json
 
 import typer
 from rich.console import Console
 
-from .aws_fetcher import AWSFetcher
 from .analyzer import CostAnalyzer
+from .aws_fetcher import AWSFetcher
 from .dashboard import CostDashboard
 from .demo import DemoDataGenerator
-
 
 app = typer.Typer(
     name="infra-cost-sentinel",
@@ -33,10 +32,10 @@ def analyze(
 ) -> None:
     """Analyze AWS infrastructure costs and provide optimization recommendations."""
     dashboard = CostDashboard(console)
-    
+
     end_date = date.today()
     start_date = end_date - timedelta(days=days)
-    
+
     with dashboard.create_progress_context() as progress:
         if demo:
             progress.add_task("Generating demo data...", total=None)
@@ -54,26 +53,37 @@ def analyze(
                 console.print(f"[red]Error fetching AWS data: {e}[/red]")
                 console.print("[yellow]Tip: Use --demo flag to see sample data[/yellow]")
                 raise typer.Exit(1)
-        
+
         progress.update(progress.task_ids[0], description="Analyzing costs...")
         analyzer = CostAnalyzer()
         report = analyzer.analyze(cost_summary, resources)
-    
+
     console.print()
     dashboard.display_analysis_report(report)
-    
+
     if show_all_resources and resources:
         console.print()
         dashboard.display_resources(resources, show_all=True)
-    
+
     if output:
         export_data = {
             "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
             "total_cost": str(report.summary.total_cost),
             "efficiency_score": report.efficiency_score,
             "potential_savings": str(report.total_potential_savings),
-            "services": [{"name": s.service, "cost": str(s.amount), "percentage": s.percentage} for s in report.summary.by_service],
-            "idle_resources": [{"id": r.resource_id, "type": r.resource_type, "monthly_cost": str(r.monthly_cost), "savings": str(r.potential_savings)} for r in report.idle_resources],
+            "services": [
+                {"name": s.service, "cost": str(s.amount), "percentage": s.percentage}
+                for s in report.summary.by_service
+            ],
+            "idle_resources": [
+                {
+                    "id": r.resource_id,
+                    "type": r.resource_type,
+                    "monthly_cost": str(r.monthly_cost),
+                    "savings": str(r.potential_savings),
+                }
+                for r in report.idle_resources
+            ],
             "recommendations": report.recommendations,
         }
         Path(output).write_text(json.dumps(export_data, indent=2))
@@ -88,10 +98,10 @@ def costs(
 ) -> None:
     """Show cost summary and breakdown by service."""
     dashboard = CostDashboard(console)
-    
+
     end_date = date.today()
     start_date = end_date - timedelta(days=days)
-    
+
     if demo:
         generator = DemoDataGenerator(seed=42)
         summary = generator.generate_cost_summary(start_date, end_date)
@@ -102,7 +112,7 @@ def costs(
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
             raise typer.Exit(1)
-    
+
     dashboard.display_summary(summary)
     console.print()
     dashboard.display_service_breakdown(summary)
@@ -119,7 +129,7 @@ def resources(
 ) -> None:
     """List AWS resources with cost analysis."""
     dashboard = CostDashboard(console)
-    
+
     if demo:
         generator = DemoDataGenerator(seed=42)
         resource_list = generator.generate_resources()
@@ -130,9 +140,9 @@ def resources(
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
             raise typer.Exit(1)
-    
+
     dashboard.display_resources(resource_list, show_all=not idle_only)
-    
+
     total_savings = sum((r.potential_savings for r in resource_list), Decimal("0"))
     if total_savings > 0:
         console.print(f"\n[bold green]Total potential savings: ${total_savings:.2f}/month[/bold green]")
@@ -146,10 +156,10 @@ def trends(
 ) -> None:
     """Show cost trends and projections."""
     dashboard = CostDashboard(console)
-    
+
     end_date = date.today()
     start_date = end_date - timedelta(days=days)
-    
+
     if demo:
         generator = DemoDataGenerator(seed=42)
         summary = generator.generate_cost_summary(start_date, end_date)
@@ -160,10 +170,10 @@ def trends(
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
             raise typer.Exit(1)
-    
+
     analyzer = CostAnalyzer()
     report = analyzer.analyze(summary, [])
-    
+
     dashboard.display_summary(summary)
     console.print()
     dashboard._display_trends(report.trends)
@@ -173,18 +183,18 @@ def trends(
 def demo_mode() -> None:
     """Run a full demo with realistic sample data."""
     console.print("[bold cyan]Running Infra Cost Sentinel Demo[/bold cyan]\n")
-    
+
     generator = DemoDataGenerator(monthly_budget=Decimal("5000"), seed=42)
-    
+
     end_date = date.today()
     start_date = end_date - timedelta(days=30)
-    
+
     summary = generator.generate_cost_summary(start_date, end_date)
     resources = generator.generate_resources()
-    
+
     analyzer = CostAnalyzer()
     report = analyzer.analyze(summary, resources)
-    
+
     dashboard = CostDashboard(console)
     dashboard.display_analysis_report(report)
 
